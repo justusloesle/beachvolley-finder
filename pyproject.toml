@@ -13,6 +13,8 @@ dependencies = [
     # "anthropic>=0.40",       # LLM calls
     # "langchain>=0.3",        # only where it earns its place
     # "streamlit>=1.40",       # the GUI, later
+    "geopy>=2.5.0",
+    "google-genai>=2.16.0",
 ]
 
 [dependency-groups]
