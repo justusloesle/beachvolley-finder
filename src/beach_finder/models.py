@@ -8,6 +8,12 @@ from datetime import date, datetime
 
 class Tournament(BaseModel):
     """A single tournament parsed from a source like ebf.li.
+
+    Facts only: everything here comes from the source and is identical for
+    every user. Anything the pipeline *derives* for one particular user —
+    distance, travel time, the LLM's ranking — belongs on
+    TournamentCandidate, so one scraped list can be shared across users
+    without runs leaking state into each other.
     """
 
 
@@ -25,16 +31,6 @@ class Tournament(BaseModel):
     level: str
     team_mode: str
 
-    distance: float | None = None
-
-    estimated_travel_time: int | None = None
-
-    reasoning: str | None = None
-    rank: int | None = None
-
-#spot-logic may (not) be needed because of query parameters
-   # taken_spots: int
-   # max_spots: int
     registration_url: str | None = None
 
     @field_validator("tournament_date")
@@ -43,6 +39,24 @@ class Tournament(BaseModel):
         if tournament_date < date.today():
             raise ValueError(f"date is in the past: {tournament_date}")
         return tournament_date
+
+
+class TournamentCandidate(BaseModel):
+    """A tournament as it looks *for one user*.
+
+    Wraps the shared Tournament facts and collects the per-user values the
+    pipeline fills in as it goes: `distance` at the geo stage,
+    `estimated_travel_time` at the transit stage, `reasoning` and `rank` at
+    the LLM stage.
+    """
+
+    tournament: Tournament
+    distance: float
+
+    estimated_travel_time: int | None = None
+
+    reasoning: str | None = None
+    rank: int | None = None
 
 class RankingResult(BaseModel):
     """The structure of the result-format of the LLM"""
@@ -54,7 +68,12 @@ class RankingList(BaseModel):
     rankings: list[RankingResult]
 
 
-
+class User(BaseModel):
+    id: str
+    max_km: int
+    team_modes: list[str]
+    preferences: str
+    telegram_url: str
 
 """
 @field_validator("taken_spots")

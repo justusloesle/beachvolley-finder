@@ -10,25 +10,26 @@ summary. That boundary is the whole point of the project and the thing you
 want to be able to defend in the interview.
 """
 
-from beach_finder.models import Tournament, RankingResult, RankingList
+from beach_finder.models import TournamentCandidate, RankingResult, RankingList, User
 from google import genai
 from beach_finder.config import GEMINI_API_KEY
 
 def filter_by_mode(
-    tournaments: list[Tournament],
-    modes: list[str]) -> list[Tournament]:
+    candidates: list[TournamentCandidate],
+    user: User) -> list[TournamentCandidate]:
+    allowed_modes = {m.lower() for m in user.team_modes}
     filtered = []
-    for tournament in tournaments:
-        if tournament.team_mode in modes:
-            filtered.append(tournament)
+    for candidate in candidates:
+        if candidate.tournament.team_mode.lower() in allowed_modes:
+            filtered.append(candidate)
 
     return filtered
 
 
 def rank_tournaments(
-    tournaments: list[Tournament],
-    preferences: str,
-) -> list[Tournament]:
+    candidates: list[TournamentCandidate],
+    user: User,
+) -> list[TournamentCandidate]:
     """Rank tournaments using the LLM as a judgment layer.
 
     TODO:
@@ -40,8 +41,8 @@ def rank_tournaments(
         ranked yourself, and record the agreement rate in the README
     """
     prompt: str = "You are specialized in ranking beach-volleyball tournaments. You are given a list of tournaments, each with a unique id, distance to Garching, a mode, level, estimated travel time, and a starting time. These are facts, do not question or recalculate them. \n "
-    prompt += _serialize_tournaments(tournaments)
-    prompt += f"Furthermore, you are given the following general user preferences {preferences} \n"
+    prompt += _serialize_tournaments(candidates)
+    prompt += f"Furthermore, you are given the following general user preferences {user.preferences} \n"
     prompt += "Evaluate and rank the tournaments based on the given data, primarily take into account travel time, but weigh in the preferences regarding the other data equally."
 
 
@@ -65,18 +66,22 @@ def rank_tournaments(
         raise ValueError(f"unexpected LLM output: {response.text}")
 
 
-    by_id = {t.id: t for t in tournaments}
+    by_id = {c.tournament.id: c for c in candidates}
     ranked = []
     for r in parsed.rankings:
-        t = by_id.get(r.id)
-        if t is not None:
-            t.reasoning = r.reasoning
-            ranked.append(t)
+        candidate = by_id.get(r.id)
+        if candidate is not None:
+            candidate.reasoning = r.reasoning
+            candidate.rank = r.rank
+            ranked.append(candidate)
+
+    ranked.sort(key=lambda c: c.rank)
     return ranked
 
-def _serialize_tournaments(tournaments: list[Tournament]) -> str:
+def _serialize_tournaments(candidates: list[TournamentCandidate]) -> str:
     serialized: str = ""
-    for tournament in tournaments:
-        serialized += f" Tournament {tournament.name} with id {tournament.id}, distance: {tournament.distance}, mode: {tournament.team_mode}, level: {tournament.level}, travel duration: {tournament.estimated_travel_time}, starting time: {tournament.begin_time} \n"
+    for candidate in candidates:
+        t = candidate.tournament
+        serialized += f" Tournament {t.name} with id {t.id}, distance: {candidate.distance}, mode: {t.team_mode}, level: {t.level}, travel duration: {candidate.estimated_travel_time}, starting time: {t.begin_time} \n"
 
     return serialized

@@ -10,8 +10,9 @@ Import from other test modules with:
 """
 
 from datetime import date, datetime, timedelta, timezone
+from uuid import uuid4
 
-from beach_finder.models import Tournament
+from beach_finder.models import Tournament, User
 
 # Origin used by the distance filter (TUM Garching).
 GARCHING = (48.249, 11.651)
@@ -75,3 +76,18 @@ OBERURSEL = Tournament(
 
 # Deliberately NOT in distance order, so tests can prove sorting works.
 ALL_TOURNAMENTS = [OBERURSEL, GERMERING, NUERNBERG]
+
+
+def make_user(
+    max_km: int,
+    team_modes: list[str] | None = None,
+    preferences: str = "",
+) -> User:
+    """Build a throwaway User for tests that only care about one preference."""
+    return User(
+        id=uuid4(),
+        max_km=max_km,
+        team_modes=team_modes if team_modes is not None else ["Herren", "Mixed"],
+        preferences=preferences,
+        telegram_url="",
+    )

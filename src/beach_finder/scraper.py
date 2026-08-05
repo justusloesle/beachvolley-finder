@@ -53,13 +53,13 @@ def fetch_tournaments() -> list[Tournament]:
         results = data["results"]
         params = None
         for result in results:
-            tournament = _to_tournament(result)
-            tournaments.append(tournament)
+            if _is_volleyball_tournament(result):
+                tournament = _to_tournament(result)
+                tournaments.append(tournament)
 
         url = data["next"]
 
-    if num_of_tournaments != len(tournaments):
-        print(f"WARNING: got {len(tournaments)}, expected {data['count']}")
+
 
     return tournaments
 
@@ -68,34 +68,44 @@ def fetch_tournaments() -> list[Tournament]:
 
 
 def _to_tournament(raw: dict):
+    try:
+        tournament_id = raw["id"]
+        name: str = raw["name"]["de"]
+        location: str =  raw["venue"]["city"]
+        tournament_date: date = raw["date"]
+        begin_time: datetime = raw["begin"]
 
-    tournament_id = raw["id"]
-    name: str = raw["name"]["de"]
-    location: str =  raw["venue"]["city"]
-    tournament_date: date = raw["date"]
-    begin_time: datetime = raw["begin"]
+        latitude: float = raw["venue"]["latitude"]
+        longitude: float = raw["venue"]["longitude"]
 
-    latitude: float = raw["venue"]["latitude"]
-    longitude: float = raw["venue"]["longitude"]
+        level: str = raw["level"]["de"]
+        team_mode: str = raw["teamMode"]["name"]
+        registration_url: str = raw["url"]
 
-    level: str = raw["level"]["de"]
-    team_mode: str = raw["teamMode"]["name"]
-    registration_url: str = raw["url"]
+        tournament_dict = {
+            "id" : tournament_id,
+            "name" : name,
+            "location" : location,
+            "tournament_date" : tournament_date,
+            "begin_time" : begin_time,
+            "latitude" : latitude,
+            "longitude" : longitude,
+            "level" : level,
+            "team_mode" : team_mode,
+            "registration_url" : registration_url
+        }
 
-    tournament_dict = {
-        "id" : tournament_id,
-        "name" : name,
-        "location" : location,
-        "tournament_date" : tournament_date,
-        "begin_time" : begin_time,
-        "latitude" : latitude,
-        "longitude" : longitude,
-        "level" : level,
-        "team_mode" : team_mode,
-        "registration_url" : registration_url
-    }
+        return Tournament.model_validate(tournament_dict)
+    except Exception as e:
+        print(f"SKIPPED {raw.get('id')}: {e}")
+        print(raw)  # das komplette rohe dict ausgeben
+        raise  # Fehler weiterreichen, Programm stoppt hier
 
-    return Tournament.model_validate(tournament_dict)
+
+def _is_volleyball_tournament(raw: dict) -> bool:
+    if not raw["level"]:
+        return False
+    return True
 
 
 if __name__ == "__main__":
