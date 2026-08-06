@@ -2,7 +2,7 @@
 
 
 from beach_finder.models import User
-from uuid import uuid4
+
 
 
 

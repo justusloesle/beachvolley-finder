@@ -23,7 +23,7 @@ def find_tournaments_single_user(raw: list[Tournament], user: User) -> None:
 
 
 
-def find_tournament_workflow(users: list[User]):
+def find_tournaments_workflow(users: list[User]):
     raw = fetch_tournaments()
     for user in users:
         find_tournaments_single_user(raw, user)
