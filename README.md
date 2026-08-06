@@ -45,6 +45,13 @@ Created to solve the issue of spontaniously appearing beach-volleyball tournamen
      Your mini-eval: on N tournaments you hand-ranked, how often does
      the LLM ranking agree with yours? Put the number here. -->
 
+## TBD - Next Features
+
+- Changing settings by texting the telegram bot - requires proper hosting of the service (not via github actions)
+- New metric: tournament strength to rank "easier" tournaments higher - requires advanced scraping of individual tournaments
+
+
+
 ## License
 
 MIT

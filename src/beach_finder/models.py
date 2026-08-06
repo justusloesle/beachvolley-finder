@@ -62,7 +62,7 @@ class RankingResult(BaseModel):
     """The structure of the result-format of the LLM"""
     rank:int
     id: int
-    reasoning:str = Field(description="One or two sentences explaining this ranking, mentioning the concrete tradeoff")
+    reasoning:str = Field(description="One sentence explaining this ranking, mentioning the concrete tradeoff (german)")
 
 class RankingList(BaseModel):
     rankings: list[RankingResult]
@@ -72,8 +72,10 @@ class User(BaseModel):
     id: str
     max_km: int
     team_modes: list[str]
+    levels: list[str]
     preferences: str
-    telegram_url: str
+    telegram_chat_id: str
+
 
 """
 @field_validator("taken_spots")

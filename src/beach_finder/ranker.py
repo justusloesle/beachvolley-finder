@@ -12,7 +12,8 @@ want to be able to defend in the interview.
 
 from beach_finder.models import TournamentCandidate, RankingResult, RankingList, User
 from google import genai
-from beach_finder.config import GEMINI_API_KEY
+from beach_finder.config import ANTHROPIC_API_KEY
+
 
 def filter_by_mode(
     candidates: list[TournamentCandidate],
@@ -25,6 +26,16 @@ def filter_by_mode(
 
     return filtered
 
+def filter_by_level(
+        candidates: list[TournamentCandidate],
+        user: User) -> list[TournamentCandidate]:
+    allowed_levels = {l.lower() for l in user.levels}
+    filtered = []
+    for candidate in candidates:
+        if candidate.tournament.level.lower() in allowed_levels:
+            filtered.append(candidate)
+
+    return filtered
 
 def rank_tournaments(
     candidates: list[TournamentCandidate],
@@ -48,7 +59,7 @@ def rank_tournaments(
 
 
 
-    client = genai.Client(api_key=GEMINI_API_KEY)
+    client = genai.Client(api_key=ANTHROPIC_API_KEY)
 
     response = client.models.generate_content(
         model="gemini-3.6-flash",

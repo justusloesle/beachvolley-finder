@@ -10,16 +10,18 @@ JUSTUS = User(
     id= "justus",
     max_km= 100,
     team_modes= ["Herren", "Mixed"],
+    levels= ["Basic", "Freestyle", "e-b-f", "f-b-e"],
     preferences= "Preferred: Sundowners and early morning tournaments, shorter travel times as well as levels of basic > freestyle > e-b-f above everything else.",
-    telegram_url= ""
+    telegram_chat_id= "8808052337"
 )
 
 MAYA = User(
     id= "maya",
     max_km=50,
     team_modes= ["Damen", "Mixed"],
+    levels=["Basic", "Freestyle", "e-b-f", "f-b-e"],
     preferences= "Preferred: Shortest distance and travel time, levels of basic > e-b-f > freestyle above everything else, mixed > damen.",
-    telegram_url= ""
+    telegram_chat_id= ""
 )
 
 USERS = [JUSTUS, MAYA]
